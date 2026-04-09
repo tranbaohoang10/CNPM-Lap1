@@ -1,6 +1,9 @@
 package com.myshop.pages;
 
-import org.openqa.selenium.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -14,57 +17,42 @@ public class HomePage {
     private WebDriverWait wait;
     private Random random = new Random();
 
-    private By addToCartButtons =
-            By.xpath("//form[contains(@action,'AddToCart')]//button[@type='submit']");
-
-    private By cartIcon = By.id("cartIcon");
+    private By productDetailLinks =
+            By.xpath("//a[contains(@href,'/DetailsProductController?id=')]");
 
     public HomePage(WebDriver driver) {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
-    public void clickRandomAddToCart() {
-        List<WebElement> buttons = wait.until(d -> {
-            List<WebElement> list = d.findElements(addToCartButtons)
+    private void delay2Seconds() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public ProductDetailsPage openRandomProductDetails() {
+        List<WebElement> links = wait.until(d -> {
+            List<WebElement> list = d.findElements(productDetailLinks)
                     .stream()
                     .filter(WebElement::isDisplayed)
                     .collect(Collectors.toList());
             return list.isEmpty() ? null : list;
         });
 
-        int randomIndex = random.nextInt(buttons.size());
-        WebElement randomButton = buttons.get(randomIndex);
+        int randomIndex = random.nextInt(links.size());
+        WebElement randomLink = links.get(randomIndex);
 
         ((JavascriptExecutor) driver).executeScript(
-                "arguments[0].scrollIntoView({block:'center'});", randomButton
+                "arguments[0].scrollIntoView({block:'center'});", randomLink
         );
+        delay2Seconds();
 
-        wait.until(ExpectedConditions.elementToBeClickable(randomButton)).click();
+        wait.until(ExpectedConditions.elementToBeClickable(randomLink)).click();
+        delay2Seconds();
 
-        wait.until(d ->
-                ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete")
-        );
-
-        System.out.println("Đã thêm sản phẩm ngẫu nhiên, vị trí: "
-                + (randomIndex + 1) + "/" + buttons.size());
-    }
-
-    public CartPage goToCart() {
-        WebElement cart = wait.until(ExpectedConditions.elementToBeClickable(cartIcon));
-
-        ((JavascriptExecutor) driver).executeScript(
-                "arguments[0].scrollIntoView({block:'center'});", cart
-        );
-
-        cart.click();
-
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        return new CartPage(driver);
+        return new ProductDetailsPage(driver);
     }
 }

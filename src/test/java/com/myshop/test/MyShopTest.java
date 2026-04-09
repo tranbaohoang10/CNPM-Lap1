@@ -1,8 +1,6 @@
 package com.myshop.test;
 
-import com.myshop.pages.CartPage;
-import com.myshop.pages.HomePage;
-import com.myshop.pages.LoginPage;
+import com.myshop.pages.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,17 +37,42 @@ public class MyShopTest {
     }
 
     @Test
-    public void testLoginAddRandomProductAndGoToCart() {
+    public void testLoginAddToCartCheckoutAndPayCOD() {
         loginPage.open();
         loginPage.login("tranbaohoang1105@gmail.com", "123");
 
         wait.until(d -> d.getCurrentUrl() != null && !d.getCurrentUrl().contains("/login"));
 
-        homePage.clickRandomAddToCart();
+        ProductDetailsPage productDetailsPage = homePage.openRandomProductDetails();
 
-        CartPage cartPage = homePage.goToCart();
+        Assertions.assertTrue(productDetailsPage.isAt(), "Không vào được trang chi tiết sản phẩm");
+        Assertions.assertFalse(productDetailsPage.getProductTitle().isEmpty(), "Tên sản phẩm đang bị rỗng");
+        Assertions.assertTrue(productDetailsPage.isAddToCartButtonDisplayed(), "Không thấy nút thêm vào giỏ hàng");
+
+        System.out.println("Đã vào chi tiết sản phẩm: " + productDetailsPage.getProductTitle());
+
+        productDetailsPage.waitOnDetailsPage();
+        productDetailsPage.addToCart();
+
+        CartPage cartPage = productDetailsPage.goToCart();
 
         Assertions.assertTrue(cartPage.isAt(), "Không vào được trang giỏ hàng");
         Assertions.assertTrue(cartPage.hasItems(), "Giỏ hàng chưa có sản phẩm");
+
+        System.out.println("Đã vào giỏ hàng");
+
+        CheckoutPage checkoutPage = cartPage.clickPlaceOrder();
+
+        Assertions.assertTrue(checkoutPage.isAt(), "Không vào được trang đặt hàng / checkout");
+        System.out.println("Đã vào trang đặt hàng");
+
+        checkoutPage.fillFixedShippingInfo();
+        System.out.println("Đã chọn cứng Bình Thuận - Tuy Phong - Phan Rí Cửa");
+
+        checkoutPage.chooseCashOnDelivery();
+        System.out.println("Đã chọn thanh toán khi nhận hàng");
+
+        checkoutPage.clickPay();
+        System.out.println("Đã bấm thanh toán");
     }
 }
