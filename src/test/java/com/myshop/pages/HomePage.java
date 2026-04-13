@@ -19,6 +19,9 @@ public class HomePage {
 
     private By productDetailLinks =
             By.xpath("//a[contains(@href,'/DetailsProductController?id=')]");
+    private By searchForm = By.id("headerSearchForm");
+    private By searchInput = By.id("headerSearchInput");
+    private By searchButton = By.cssSelector(".btn-search");
 
     public HomePage(WebDriver driver) {
         this.driver = driver;
@@ -54,5 +57,24 @@ public class HomePage {
         delay2Seconds();
 
         return new ProductDetailsPage(driver);
+    }
+
+    public SearchResultsPage searchByKeyword(String keyword) {
+        WebElement form = wait.until(ExpectedConditions.visibilityOfElementLocated(searchForm));
+        WebElement input = form.findElement(searchInput);
+
+        input.clear();
+        input.sendKeys(keyword);
+        delay2Seconds();
+
+        WebElement button = wait.until(ExpectedConditions.elementToBeClickable(form.findElement(searchButton)));
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].scrollIntoView({block:'center'}); arguments[0].click();",
+                button
+        );
+        wait.until(d -> d.getCurrentUrl() != null && d.getCurrentUrl().contains("/search"));
+        delay2Seconds();
+
+        return new SearchResultsPage(driver);
     }
 }
