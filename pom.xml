@@ -23,9 +23,40 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>6.0.3</version>
+            <version>5.10.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <failIfNoTests>false</failIfNoTests>
+                    <includes>
+                        <include>${selenium.test.pattern}</include>
+                    </includes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <profiles>
+        <profile>
+            <id>cinebook</id>
+            <activation><activeByDefault>true</activeByDefault></activation>
+            <properties>
+                <selenium.test.pattern>**/cinebook/tests/**/*Test.java</selenium.test.pattern>
+            </properties>
+        </profile>
+        <profile>
+            <id>myshop</id>
+            <properties>
+                <selenium.test.pattern>**/MyShopTest.java</selenium.test.pattern>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
